@@ -66,8 +66,9 @@ Dagger는 low-end devices를 위해 설계된 dependency injector.
 ##### @Inject annotation
 - JSR-330 표준 annotation으로 의존성을 요청함. DI framework(Dagger2)로 부터 제공받아야 되는 의존성을 표기함
 - Dagger2는 세 가지 방식의 의존성 주입을 제공함  
-  1. Constructor injector
-  ```Java
+
+  1. Constructor injector  
+```Java
   public class LoginActivityPresenter {
 
       private LoginActivity loginActivity;
@@ -83,9 +84,9 @@ Dagger는 low-end devices를 위해 설계된 dependency injector.
           this.userManager = userManager;
       }
   }
-  ```
-  2. Field injector
-  ```Java
+```
+  2. Field injector  
+```
   public class SplashActivity extends AppCompatActivity {
 
       @Inject
@@ -99,9 +100,9 @@ Dagger는 low-end devices를 위해 설계된 dependency injector.
           getAppComponent().inject(this);
       }
   }  
-  ```
-  3. Method injector
-  ```Java
+```
+  3. Method injector  
+```
   public class LoginActivityPresenter {
 
       private LoginActivity loginActivity;
@@ -116,7 +117,7 @@ Dagger는 low-end devices를 위해 설계된 dependency injector.
           watches.register(this);    //Watches instance required fully constructed LoginActivityPresenter
       }
   }
-  ```
+```
 
 
 #### @Module annotation
@@ -134,6 +135,8 @@ Dagger는 low-end devices를 위해 설계된 dependency injector.
 
 **참고자료**  
 <http://frogermcs.github.io/dependency-injection-with-dagger-2-the-api/>
+
+
 ### Setup
 
 Android Studio by default will not recognize a lot of generated Dagger 2 code as legitimate classes, but adding the android-apt plugin will add these files into the IDE class path and enable you to have more visibility. Add this line to your root build.gradle:
@@ -143,14 +146,16 @@ Android Studio by default will not recognize a lot of generated Dagger 2 code as
      // other classpath definitions here
      classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
  }
- ```
+```
 Then make sure to apply the plugin in your app/build.gradle:
 
 ```
 // add after applying plugin: 'com.android.application'  
 apply plugin: 'com.neenbedankt.android-apt'
 ```
-Add these three lines to your app/build.gradle file after this apply statement:
+
+Add these three lines to your app/build.gradle file after this apply statement:  
+
 ```
 dependencies {
     // apt command comes from the android-apt plugin
@@ -163,15 +168,15 @@ dependencies {
 
 
 ### 참고 자료
-- https://speakerdeck.com/jakewharton/dependency-injection-with-dagger-2-devoxx-2014
+- <https://speakerdeck.com/jakewharton/dependency-injection-with-dagger-2-devoxx-2014>
 
-- https://speakerdeck.com/frogermcs/dependency-injection-with-dagger-2
+- <https://speakerdeck.com/frogermcs/dependency-injection-with-dagger-2>
 
-- https://guides.codepath.com/android/Dependency-Injection-with-Dagger-2#advantages
+- <https://guides.codepath.com/android/Dependency-Injection-with-Dagger-2#advantages>
 
-- https://speakerdeck.com/frogermcs/dependency-injection-with-dagger-2
+- <https://speakerdeck.com/frogermcs/dependency-injection-with-dagger-2>
 
-- http://frogermcs.github.io/dependency-injection-with-dagger-2-introdution-to-di/
+- <http://frogermcs.github.io/dependency-injection-with-dagger-2-introdution-to-di/>
 
-- http://frogermcs.github.io
-- https://medium.com/@jason_kim/tasting-dagger-2-on-android-%EB%B2%88%EC%97%AD-632e727a7998#.p8iepei2v
+- <http://frogermcs.github.io>
+- <https://medium.com/@jason_kim/tasting-dagger-2-on-android-%EB%B2%88%EC%97%AD-632e727a7998#.p8iepei2v>
