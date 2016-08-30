@@ -45,7 +45,9 @@ compile 'io.reactivex:rxandroid:1.2.1'
 compile 'io.reactivex:rxjava:1.1.6'
 ```
 
+- Binary Size - 300KB
 
+  ​
 
 ### LICENSE
 
