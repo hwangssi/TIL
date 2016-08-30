@@ -180,7 +180,7 @@ mTvShowSubscription = tvShowObservable
 
 
 
-마지막으로, subscribe 메서드가 생성하는 mTvShowScription에 대해 알아보겠습니다. Observer가 Observable에 구독을 요청하면 Subscription이 생성됩니다. Subscription은 Observer와 Observable 사이의 연결 상태를 나타냅니다. 
+마지막으로, subscribe 메서드가 생성하는 mTvShowScription에 대해 알아보겠습니다. Observer가 Observable에 구독을 요청하면 Subscription이 생성됩니다. Subscription은 Observer와 Observable 사이의 연결 상태를 나타냅니다. 다른 thread에서 동작 중인 Observable을 구독하고 있는 Activity가 종료될 때 onDestroy()에서는 Subscription을 이용한 아래와 같은 코드가 필요합니다. 
 
 ```java
 if (mTvShowSubscription != null && !mTvShowSubscription.isUnsubscribed()) {
@@ -188,13 +188,73 @@ if (mTvShowSubscription != null && !mTvShowSubscription.isUnsubscribed()) {
 }
 ```
 
-pub/sub 패턴을 사용하게 되면 종종 Activity가 종료되고 나서 다른 thread에서 실행된 결과가 끝이 나는 경우 memory leaks과 NullPointerException을 발생시킬 수 있습니다. Subscrition을 unsubscribe()를 이용해 이를 방지할 수 있게 해줍니다. unsubscribe() 메서드를 호출하면 Observer는 더 이상 발행되는 값을 받지 않고, Observable과의 연결이 끊기게 됩니다. 따라서, threading task와 연관된 문제들을 사전에 피할 수 있게 됩니다. 
+pub/sub 패턴을 사용하게 되면 종종 Activity가 종료되고 나서 다른 thread에서 실행된 결과가 끝이 나는 경우 memory leaks과 NullPointerException을 발생시킬 수 있는데, Subscrition은 unsubscribe()를 이용해 이를 방지할 수 있게 해줍니다. unsubscribe() 메서드를 호출하면 Observer는 더 이상 발행되는 값을 받지 않고, Observable과의 연결이 끊기게 됩니다. 따라서, threading task와 연관된 문제들을 사전에 피할 수 있게 됩니다. 
 
 
 
-## Example3: Using Singles
+지금까지 내용을 정리하면,
+
+- Observable.fromCallable()
+  - Observable에 의해 발행되는 값의 생성을 실제 구독 시까지 지연시킬 수 있음
+  - 코드가 UI Thread가 아닌 다른 thread에서 실행될 수 있음
+- subscribeOn()
+  - value creation code를 UI Thread가 아닌 특정 thread에서 실행되도록 함
+- observeOn()
+  - Observable이 발행하는 value를 UI Thread와 같은 적절한 thread에서 지켜볼 수 있도록 함
+- Observable이 비동기로 뭔가를 로드했을 때 발생할 수 있는 문제들을 막기 위해 언제든지  Subscription을 unsubscribe할 수 있음
 
 
 
+## Example 3: Using Singles
+
+지금까지 예제를 보면 Observable이 유용하다는 것을 충분히 알 수 있지만, 다른 한 편으로 필요 이상으로 과한 경우가 많습니다. 실제로  Example1, 2에서는 모두 value를 한 번 밖에 발행하지 않았고, 따라서 onComplete() 을 사용하지도 않았습니다. 
+
+이런 경우를 위해서 좀 더 간단한 형태인 Observable이 Single을 사용할 수 있습니다. 
+
+Single은 Observable과 거의 동일하게 동작합니다. 단, onComplete(), onNext(), 그리고 onError() 대신 onSuccess()와 onError() 콜백만 있습니다. 
 
 
+
+Example2에서의 예제 코드를 Single을 이용해서 다시 구현해보면 아래와 같습니다. 
+
+```java
+Single<List<String>> tvShowSingle = Single.fromCallable(new Callable<List<String>>() {
+
+  @Override
+  public List<String> call() throws Exception {
+    mRestClient.getFavoriteTvShows();
+  }
+});
+```
+
+그리고, Single을 구독해보면
+
+```Java
+mTvShowScription = tvShowSingle
+  .subscribeOn(Schedulers.io())
+  .observeOn(AndroidSchedulers.mainThread())
+  .subscribe(new SingleSubscriber<List<String>>() {
+    
+    @Override
+    public void onSuccess(List<String> tvShows) {
+      displayTvShows(tvShows);
+    }
+    
+    @Override
+    public void onError(Throwable error) {
+      displayErrorMessage();
+    }
+  });
+```
+
+SingleSubscriber는 callback이 onSuccess()와 onError() 두 개라는 점만 제외하고는 Observer와 동일하고, Single을 subscribe하는 용도로 사용됩니다. 그리고, 이전 예제에는 없던 error handling 코드가 onError() 콜백에 추가되었습니다. 따라서 mRestClient.getFavoriteTvShows에서 에러가 throws되면, onError() 콜백이 호출됩니다. 
+
+
+
+## 마치며
+
+Part1에서는 RxJava(Android)에서 비동기 처리를 제공하는 컨셉인 Observable과 Observer에 대해 이해하고, 이 두 가지를 이용해서 실제 비동기로 데이터를 로드하고, 로드한 결과를 UI에 반영하는 방법까지 알아봤습니다. 가장 관심을 두고 본 내용은 subscribeOn()과 observeOn() 메서를 이용해 비동기 데이터 로드가 UI Thread가 아닌 다른 Thread에서 실행되도록 하는 것과 실행 결과를 UI Thread에서 받을 수 있도록 하는 부분이었습니다. 실제로 안드로이드 앱 개발을 하다보면 이와 같은 구현이 필요한 경우가 많은데 상당히 번거롭고 코드 간결성이나 생산성이 떨어질 뿐만 아니라 실수가 많이 발생할 수 있는 부분입니다. 
+
+
+
+아직 RxJava의 기본 컨셉을 이해한 수준이지만, 이번 Part1에서 언급한 장점만으로도 충분히 안드로이드 앱 개발자에게 매력적으로 느껴질 수 있는 라이브리러가 아닌가 하는 생각이 듭니다. 
