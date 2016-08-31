@@ -12,7 +12,7 @@ Part1에서는
 
 에 대해서 알아봤습니다. 
 
-이제 좀 더 응용 버전의 Observable과 예제들을 살표보도록 하겠습니다. 
+이제 좀 더 응용 버전의 Observable과 Operators 예제들을 살표보도록 하겠습니다. 
 
 
 
@@ -116,7 +116,17 @@ Subjects은 Observer이기도 하기 때문에 onNext() 메서드를 가짐
 **map**
 
 - Functional Programming에서 주로 값을 변형하는 함수로 많이 쓰임
-- one value -> another value
+- 하나의 데이터를 다른 데이터로 바꾸는 operator(참고, [RxJava의 다양한 operators](http://reactivex.io/documentation/operators.html))
+- 원본 스트림(Observable)을 변경하지 않고, 변형된 새로운 스트림(Observable)을 생성함
+
+
+![데이터 가공 Map](https://realm.io/assets/img/news/lk-rx2-1.png)
+
+**Operator**
+
+- Observable이 발행하는 데이터들을 변환, 결합, 조작하는 기능을 제공하고, 그 결과를 새로운 Observable로 반환함
+- 연속된 비동기 호출을 구성할 수 있음 
+- **중첩된 콜백 핸들러**로 인한 콜백 지옥에서 해방
 
 
 
@@ -143,9 +153,9 @@ Single.just(4).map(new Func1<Integer, String>() {
 
 숫자 4가 발행되지만 text로 표시해야 되기 때문에 map을 이용해서 Interger 4를 String로 변환해서 전달함
 
-**Observable에서 발행한 value를 받아서 변환 또는 추가 로직을 수행해서 다시 Observable로 반환**
+**Observable에서 발행한 데이터를 받아서 변환 또는 추가 로직을 수행해서 다시 Observable로 반환**
 
--> Java의 callback 지옥에서 벗어날 수 있음 !!!
+
 
 
 
@@ -160,6 +170,12 @@ Single.just(4).map(new Func1<Integer, String>() {
 
 
 New RxJava Concept: debounce
+
+**debounce**
+
+- 일정 시간 이상 으로 입력이 들어오지 않을 때만 데이터를 발행하라고 Subject에게 알림
+
+
 
 자, 시작해봅시다. 
 
@@ -205,10 +221,6 @@ mSearchInput.addTextChangedListener(new TextWatcher() {
 ```
 
 
-
-**debounce**
-
-- 일정 시간 이상 으로 입력이 들어오지 않을 때만 value를 발행하라고 Subject에게 알림
 
 위의 예제에서 TextWatcher는 사용자가 키보드를 입력할 때마다 onTextChanged 발생하고, mSearchResultsSubject의 onNext가 불려서 사용자가 입력한 값이 발행되도록 되어 있음. 하지만, 사용자가 키보드를 입력할 때마다 value를 발행해서 해당 value로 서버에 요청을 보내는 것은 바람직하지도 않고, 원하는 바도 아님.
 
@@ -259,9 +271,14 @@ mSearchResultsSubject
 
 
 
-## 정리하면
+
+## 마치며
 
 RxJava의 가장 기본적인 concept과 몇 개의 예제를 살펴봤음
 
 RxJava에는 이밖에도 아주 많은 Operator들이 있기 때문에 다양한 응용을 위해서는 추가로 살펴볼 것을 추천함
+
+
+
+아직 RxJava의 기본 컨셉을 이해한 수준이지만, 이번 Part1에서 언급한 장점만으로도 충분히 안드로이드 앱 개발자에게 매력적으로 느껴질 수 있는 라이브리러가 아닌가 하는 생각이 듭니다. 
 

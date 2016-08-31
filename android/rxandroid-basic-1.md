@@ -10,7 +10,11 @@
 
 ## 들어가기 전에..
 
-ReactiveX(Reactive Extention) 또는 Rx는 observable pattern을 이용해 비동기 처리와 이벤트 기반 프로그램을 구성할 수 있도록 해주는 라이브러리 또는 API로 볼 수 있다.
+ReactiveX(Reactive Extention) 또는 Rx는 **Observer Pattern**을 이용해 **비동기 처리와 이벤트 기반 프로그램**을 구성할 수 있도록 해주는 라이브러리 또는 API이다.
+
+마이크로소프트에서 Observer Pattern과 LINQ style query operator를 확장해서 처음 공개했고, 여러 곳에서 호응을 받아서 다양한 플랫폼 버전(RxJava, RxAndroid)으로 확장됨
+
+> Rx is a library to compose asynchronous and event-based programs using observable collections and LINQ-style query operators.
 
 > An API for asynchronous programming with observable streams
 
@@ -35,8 +39,9 @@ ReactiveX(Reactive Extention) 또는 Rx는 observable pattern을 이용해 비�
 - [RxAndroid GitHub](https://github.com/ReactiveX/RxAndroid)
 
 
-
 ### Binaries
+
+rxandroid만 의존성을 추가해도 되지만, rxandroid가 의존하는 rxjava를 최신 버전으로 사용하기 위해서는 rxjava도 추가로 의존성을 추가해주는 것이 좋음
 
 ```
 compile 'io.reactivex:rxandroid:1.2.1'
@@ -59,23 +64,47 @@ Apache License, Versoin 2.0
 
 Part1에서는 RxJava를 이용해 비동기로 데이터를 로드하는 과정을 설명합니다. 
 
+
+
+1. UI Thread에서 상태 refresh 실행
+
+2. Background Thread에서 서버에 상태 업데이트 요청
+
+3. 콜백에서 서버로부터 결과 받음
+
+4. 서로부터 받은 결과를 UI에 반영
+
+   ​
+
 안드로이드 프로그래밍을 하다보면, network request를 수행하는 일이 빈번한데 이런 network request의 경우 서버로부터 결과를 받을 때까지 delay가 발생합니다. 따라서, UI가 blocking되지 않도록 해당 작업이 background thread에서 실행되도록 thread를 생성해서 처리합니다. 하지만, 처리 결과를 callback으로 받아서 UI에 반영하기 위해서는 UI Thread로 다시 전달하기 위해 handler 등의 방법을 사용해서 구현하고는 하는데, 코드 간결성이 떨어질 뿐만 아니라 생산성이나 가독성도 좋지 못합니다. RxJava를 이용하면 이와 같은 비동기 데이터를 로드하여 UI에 반영하는 작업을 간결하고 손쉽게 구현이 가능합니다. 
 
 
 
-### 기본 컨셉
+## 기본 컨셉
 
 RxJava에서 가장 핵심적인 두 가지 요소가 Observable과 Observer입니다. 
 
-Observable은 value 를 발행하고, Observer는 반대로 Observable을 구독해서 지켜보다가 value를 받습니다. 
+Observable은 데이터 스트림으로 push기반으로 데이터 를 발행하고, Observer는 Observable이 발행하는 데이터를 받습니다. 
 
 
 
-Observer는 다음 세 가지 경우에 대해 추가적인 action들을 취할 수 있습니다. 그리고, 각각의 action들은 Observer의 인터페이스로 추상화되어 있어서 해당 인터페이스를 이용하여 구현할 수 있습니다. 
+Observable은 데이터를 제공하는 생산자로서 세 가지 유형의 action을 취할 수 있는데, 각각의 action을 수행할 때 그에 상응하는 Observer의 method를 호출해서 실제로 데이터를 전달함
 
-- Observable이 value를 발행했을 때 -> onNext()
+- Observable이 새로운 데이터를 발행할 때 -> onNext()
 - Observable이 error가 발생했다고 알려줄 때 -> onError()
-- Observable이 더 이상 발행할 value가 없다고 알려줄 때 -> onCompleted()
+- Observable이 더 이상 발행할 데이터가 없다고(스트림 종료) 알려줄 때 -> onCompleted()
+
+
+
+
+Observable은 데이터 스트림이기 때문에 여러 번 데이터를 발행할 수 있고, 스트림을 종료하거나 에러가 발생할 수 있음
+
+![Observable](https://realm.io/assets/img/news/rx-sequence.png)
+
+첫 번째 스트림은 세 번 데이터를 받고, 정상 종료
+
+두 번째 스트림은 두 번 데이터를 받고, 에러가 발생
+
 
 
 
@@ -83,12 +112,12 @@ Observer는 다음 세 가지 경우에 대해 추가적인 action들을 취할 
 
 가장 간단한 예제로 색상 리스트를 보여주는 Activity를 만들어 봅시다. 
 
-여기서 Observable은 Observer가 구독하면 바로 색상 리스트를 value로 발행하고, complete되면 되기 때문에 아주 간단합니다. 이러한 Observable은 Observable.just() 메서드를 이용하여 생성할 수 있는데, 이렇게 생성한 Observable은 아래와 같이 동작합니다. 
+여기서 Observable은 Observer가 구독하면 바로 색상 리스트를 데이터로 발행하고, complete되면 되기 때문에 아주 간단합니다. 이러한 Observable은 Observable.just() 메서드를 이용하여 생성할 수 있는데, 이렇게 생성한 Observable은 아래와 같이 동작합니다. 
 
 1. Observer가 구독 
-2. Observable이 바로 value를 발행 
-3. Observer의 onNext() 메서드가 Observable.just()에 제공된 매개변수와 함께 호출됨
-4. Observer의 onComplete() 콜백이 호출됨
+2. Observable.just()의 데이터 생성 코드(getColorList())가 실행되어 결과를 발행
+3. Observer의 onNext() 메서드를 호출해서 결과 데이터를 전달함
+4. Observable 스트림이 종료되고, Observer의 onComplete() 콜백이 호출됨
 
 아래는 지금까지 설명한 내용에 대한 간단한 샘플입니다. Observable.just() 메서드에 매개변수로 제공된 getColorList는 non-blocking method라고 생각하고 보시면 이해가 쉽습니다. 
 
@@ -110,9 +139,41 @@ listObservable.subscribe(new Observer<List<String>>() {
 });
 ```
 
-결국 Observable들은 Observer들이 자신들을 구독할 때 어떤 행위(behavior)를 하는냐로 정의된다고 볼 수 있습니다. 
+결국 Observable들은 구독 시에 어떤 행위(behavior)를 하는냐로 나타낸다고 볼 수 있습니다. 
 
 > Observables are primarily defined by their behavior upon subscription.
+
+
+
+
+
+## Scheduler
+
+Scheduler는 해당 Observable, Operator, Observer(or Subscriber)를 어떤 Thread에서 실행할지 결정하는 것
+
+이는 subscribeOn과 observeOn으로 지정합니다. 
+
+1. **subscribeOn**
+
+   - Obserable 자신의 실행 뿐만 아니라 Observer에게 데이터를 전달하는 흐름이 어떤 Thread에서 이루어질지 결정
+
+   ![subscribeOn](http://reactivex.io/documentation/operators/images/subscribeOn.c.png)
+
+2. **observeOn**
+
+   - Observable이 데이터를 어떤 Thread에서 전달할지 결정
+
+   ![observeOn](http://reactivex.io/documentation/operators/images/observeOn.c.png)
+
+3. **subscribeOn & observeOn**
+
+   ![overall](https://realm.io/assets/img/news/rx-schedulers.png)
+
+   observeOn에서 지정한 Scheduler는 이후에 따라오는 operator인 map과 subscriber에 모두 적용 됨
+
+   subscribeOn은 Observable의 Scheduler를 바꿈
+
+
 
 ## Example 2: Asynchronous Loading
 
@@ -144,9 +205,12 @@ Observable<List<String>> tvShowObservable = Observable.just(mRestClient.getFavor
 
 Observable.fromCallable이 생성하는 Observable은 이러한 문제를 해결할 수 있는 중요한 두 가지 특징을 가집니다. 
 
-1. 발행될 value를 생성하는 코드가 Observer에 의해 구독될 때까지 실행되지 않음
+1. 발행될 데이터를 생성하는 코드가 Observer에 의해 구독될 때까지 실행되지 않음
 2. 생성 코드가 다른 thread에서 실행될 수 있음
 
+그리고, fromCallable에서 생성한 Observable을 어떤 Thread에서 실행할지를 결정하는 부분이 필요합니다. 
+
+이 부분을 구현하기 위해서는 위에서 배운 Scheduler를 사용하도록 합니다. 
 
 
 이제 Observable을 실제로 구독하는 코드를 보면서 하나씩 알아보도록 하겠습니다.
@@ -170,7 +234,7 @@ mTvShowSubscription = tvShowObservable
     });
 ```
 
-.subscribeOn()은 기본적으로 우리가 생성한 Observable을 다른 thread에서 실행될 수 있는 Observable로 대체합니다. 즉, mRestClient.getFavoriteTvShows()를 포함한 Callable 객체내의 로직은 다른 Thread에서 실행될 수 있다는 얘기가 됩니다. 여기서는 "IO Scheduler"에서 실행되도록 구현이 되어 있습니다. 
+subscribeOn()은 기본적으로 우리가 생성한 Observable을 다른 Thread에서 실행될 수 있는 Observable로 대체합니다. 즉, mRestClient.getFavoriteTvShows()를 포함한 Callable 객체내의 로직은 다른 Thread에서 실행될 수 있다는 얘기가 됩니다. 여기서는 "IO Scheduler"에서 실행되도록 구현이 되어 있습니다. 
 
 이제 Observable의 실행 로직으로 인해 UI Thread가 Blocking되는 일은 없어졌습니다. 하지만, 또 다른 문제가 있는데, Observable이 IO Scheduler에서 실행되기 때문에 이와 상호작용하는 Observer도 IO Scheduler에서 실행됩니다. 즉, onNext()가 onCompleted()가 IO Scheduler에서 실행된다는 말이 됩니다. 
 
@@ -182,7 +246,9 @@ mTvShowSubscription = tvShowObservable
 
 
 
-마지막으로, subscribe 메서드가 생성하는 mTvShowScription에 대해 알아보겠습니다. Observer가 Observable에 구독을 요청하면 Subscription이 생성됩니다. Subscription은 Observer와 Observable 사이의 연결 상태를 나타냅니다. 다른 thread에서 동작 중인 Observable을 구독하고 있는 Activity가 종료될 때 onDestroy()에서는 Subscription을 이용한 아래와 같은 코드가 필요합니다. 
+**Subscription** - Observable과 Observer 사이의 연결
+
+마지막으로, subscribe 메서드가 생성하는 mTvShowScription에 대해 알아보겠습니다. Observer가 Observable에 구독을 요청하면 Subscription이 생성됩니다. Subscription은 Observer와 Observable 사이의 연결 상태를 나타냅니다. 다른 Thread에서 동작 중인 Observable을 구독하고 있는 Activity가 종료될 때 onDestroy()에서는 Subscription을 이용한 아래와 같은 코드가 필요합니다. 
 
 ```java
 if (mTvShowSubscription != null && !mTvShowSubscription.isUnsubscribed()) {
@@ -198,12 +264,15 @@ pub/sub 패턴을 사용하게 되면 종종 Activity가 종료되고 나서 다
 
 - Observable.fromCallable()
   - Observable에 의해 발행되는 값의 생성을 실제 구독 시까지 지연시킬 수 있음
-  - 코드가 UI Thread가 아닌 다른 thread에서 실행될 수 있음
+  - 코드가 UI Thread가 아닌 다른 Thread에서 실행될 수 있음
 - subscribeOn()
-  - value creation code를 UI Thread가 아닌 특정 thread에서 실행되도록 함
+  - 데이터 생성 코드를 UI Thread가 아닌 특정 thread에서 실행되도록 함
 - observeOn()
-  - Observable이 발행하는 value를 UI Thread와 같은 적절한 thread에서 지켜볼 수 있도록 함
+  - Observable이 발행하는 데이터를 받는 Thread를 지정할 수 있음
 - Observable이 비동기로 뭔가를 로드했을 때 발생할 수 있는 문제들을 막기 위해 언제든지  Subscription을 unsubscribe할 수 있음
+
+
+
 
 
 
@@ -253,10 +322,23 @@ SingleSubscriber는 callback이 onSuccess()와 onError() 두 개라는 점만 �
 
 
 
-## 마치며
+## 정리하면
 
 Part1에서는 RxJava(Android)에서 비동기 처리를 제공하는 컨셉인 Observable과 Observer에 대해 이해하고, 이 두 가지를 이용해서 실제 비동기로 데이터를 로드하고, 로드한 결과를 UI에 반영하는 방법까지 알아봤습니다. 가장 관심을 두고 본 내용은 subscribeOn()과 observeOn() 메서를 이용해 비동기 데이터 로드가 UI Thread가 아닌 다른 Thread에서 실행되도록 하는 것과 실행 결과를 UI Thread에서 받을 수 있도록 하는 부분이었습니다. 실제로 안드로이드 앱 개발을 하다보면 이와 같은 구현이 필요한 경우가 많은데 상당히 번거롭고 코드 간결성이나 생산성이 떨어질 뿐만 아니라 실수가 많이 발생할 수 있는 부분입니다. 
 
 
 
-아직 RxJava의 기본 컨셉을 이해한 수준이지만, 이번 Part1에서 언급한 장점만으로도 충분히 안드로이드 앱 개발자에게 매력적으로 느껴질 수 있는 라이브리러가 아닌가 하는 생각이 듭니다. 
+## Reference
+
+- [RxAndroid로 리액티브 앱 만들기](https://realm.io/kr/news/rxandroid/)
+
+- [ReactiveX](http://reactivex.io/documentation/operators/observeon.html)
+
+- [rxandroidexamples](https://github.com/klnusbaum/rxandroidexamples/tree/master/app/src/main/java/kurtis/rx/androidexamples)
+
+- [RxAndroid Basic: Part1](https://medium.com/@kurtisnusbaum/rxandroid-basics-part-1-c0d5edcf6850#.gjyh9ew7j)
+
+- [RxAndroid GitHub](https://github.com/ReactiveX/RxAndroid)
+
+  ​
+
