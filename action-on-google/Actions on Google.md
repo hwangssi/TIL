@@ -78,6 +78,12 @@ Personal Chef 예제의 문맥에서 보면, 사용자로부터 재료와 온도
 API.AI
 
 ![](https://developers.google.com/actions/images/conversation-action-apiai.png)
+
+* **API.AI NLU**
+* **A GUI interface**
+* **Conversation building features**
+
+
 ### Webhook
 Intent를 backend webhook과 연결시킬 수 있는데, 이 webhook은 3rd party platform과의 연결을 통한 확장을 허용함  
 **앞에서 언급한 외부 서비스 로직 코드인 fulfillment가 webhook과 연결딘 3rd party platform에 구현되어 있다고 보면 됨**
