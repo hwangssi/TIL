@@ -41,12 +41,18 @@ Conversation Actions의 세 가지 주요 컴포넌트
 * **Dialogs** 사용자가 action과 어떻게 대화할 지를 정의함. actions을 위한 user interface 역할을 함
 * **Fulfillment** user input을 처리하고 reponse를 돌려주는 코드로, recipes를 가져오거나 news를 읽어주는 등과 같은 외부 서비스의 로직을 구현함. REST endpoint로 노출됨
 
+![Major components of a Conversation Action](https://developers.google.com/actions/images/conversation-action.png)
+
 Conversation action을 호출하기 위한 세 가지 방법
 
 * **Conversation APIs** Google Assistant와 통신하기 위해 사용되어야 하는 request/response format을 제공함
 * **Actions SDK** NodeJS client library, Action Package definition, CLI and Web Simulator를 포함함. Google에서 deprecate하려는 분위기
 * **API.AI**
 
+
+## Conversation API
+
+![Conversation API](https://developers.google.com/actions/images/conversation-api.png)
 
 ## API.AI
 API.AI는 구글이 최근에 인수한 것으로, 개발자들이 대화형 인터페이스를 만들 수 있도록 해서 Conversation API에서 요구하는 많은 양의 텍스트 문자를 줄여줌
@@ -69,6 +75,9 @@ Personal Chef 예제의 문맥에서 보면, 사용자로부터 재료와 온도
 개발자들은 각각의 정보들을 위한 value를 설정할 수 있고, API.AI는 사용자 발화에서 의미를 추출하기 위해 이 정보들을 이용한다.  
 예를 들어 Personal Chef app이 recipe의 일부로 protein이 필요하다면, 개발자들은 beef, lamb, tofu, chicken 등과 같은 동의어 리스트 포함할 수 있다. 
 
+API.AI
+
+![](https://developers.google.com/actions/images/conversation-action-apiai.png)
 ### Webhook
 Intent를 backend webhook과 연결시킬 수 있는데, 이 webhook은 3rd party platform과의 연결을 통한 확장을 허용함  
 **앞에서 언급한 외부 서비스 로직 코드인 fulfillment가 webhook과 연결딘 3rd party platform에 구현되어 있다고 보면 됨**
