@@ -51,8 +51,13 @@ Conversation action을 호출하기 위한 세 가지 방법
 
 
 ## Conversation API
+Conversation API는  Google Assistant와 통신하기 위해 반드시 사용해야하는 request/response format.
+Action이 invoke되어 사용자와 상호작용 할 때도, Google Assistant는 action과 사용자 사이에서 브로커 역할을 하기 때문에 Conversation API를 사용해야 함
 
 ![Conversation API](https://developers.google.com/actions/images/conversation-api.png)
+
+Actions SDK는 이러한 Conversation API request를 parsing하고, response를 생성하는 라이브러리를 제공함
+
 
 ## API.AI
 API.AI는 구글이 최근에 인수한 것으로, 개발자들이 대화형 인터페이스를 만들 수 있도록 해서 Conversation API에서 요구하는 많은 양의 텍스트 문자를 줄여줌
@@ -75,13 +80,13 @@ Personal Chef 예제의 문맥에서 보면, 사용자로부터 재료와 온도
 개발자들은 각각의 정보들을 위한 value를 설정할 수 있고, API.AI는 사용자 발화에서 의미를 추출하기 위해 이 정보들을 이용한다.  
 예를 들어 Personal Chef app이 recipe의 일부로 protein이 필요하다면, 개발자들은 beef, lamb, tofu, chicken 등과 같은 동의어 리스트 포함할 수 있다. 
 
-API.AI
+API.AI를 이용해 action을 만들어 배포할 때의 flow.
 
 ![](https://developers.google.com/actions/images/conversation-action-apiai.png)
 
-* **API.AI NLU**
-* **A GUI interface**
-* **Conversation building features**
+* **API.AI NLU** Natural Language Understanding은 입력 대화를 처리함. 자연스러운 구문 확장 및 사용자 입력에서 파라미터를 쉽게 구별하고, 파싱할 수 있는 내장 기능을 제공
+* **A GUI interface** dialogs나 invocation을 쉽게 정의하고 설정할 수 있음
+* **Conversation building features** API.AI는 상태를 쉽게 유지하고, 사용자의 request를 문맥화할 수 있는 context와 같은 고급 기능을 제공함. 또한 내장 시뮬레이터와 ML algorithm을 통해 사용자 입력을 보다 잘 이해함
 
 
 ### Webhook
