@@ -1,5 +1,14 @@
 # English at work
 
+## Epsoide 36
+It's time to stand  your ground
+
+* I understant you have lots of experience, so I would like to use your skills to help with the task
+* Together we can do this job really well.
+* Let's discuss this so we can agree on a plan of action
+* Please respect my dicision and let's move on
+
+
 ## Epsoide 35
 The phrases when keeping your boss in the picture
 
